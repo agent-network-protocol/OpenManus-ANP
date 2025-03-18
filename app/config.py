@@ -64,6 +64,15 @@ class BrowserSettings(BaseModel):
     )
 
 
+class ANPSettings(BaseModel):
+    did_document_path: Optional[str] = Field(
+        None, description="Path to DID document file"
+    )
+    private_key_path: Optional[str] = Field(
+        None, description="Path to private key file"
+    )
+
+
 class AppConfig(BaseModel):
     llm: Dict[str, LLMSettings]
     browser_config: Optional[BrowserSettings] = Field(
@@ -71,6 +80,9 @@ class AppConfig(BaseModel):
     )
     search_config: Optional[SearchSettings] = Field(
         None, description="Search configuration"
+    )
+    anp_config: Optional[ANPSettings] = Field(
+        None, description="ANP tool configuration"
     )
 
     class Config:
@@ -169,6 +181,18 @@ class Config:
         if search_config:
             search_settings = SearchSettings(**search_config)
 
+        # handle ANP config
+        anp_config = raw_config.get("anp", {})
+        anp_settings = None
+        if anp_config:
+            anp_settings = ANPSettings(
+                **{
+                    k: v
+                    for k, v in anp_config.items()
+                    if k in ANPSettings.__annotations__ and v is not None
+                }
+            )
+
         config_dict = {
             "llm": {
                 "default": default_settings,
@@ -179,6 +203,7 @@ class Config:
             },
             "browser_config": browser_settings,
             "search_config": search_settings,
+            "anp_config": anp_settings,
         }
 
         self._config = AppConfig(**config_dict)
@@ -194,6 +219,10 @@ class Config:
     @property
     def search_config(self) -> Optional[SearchSettings]:
         return self._config.search_config
+
+    @property
+    def anp_config(self) -> Optional[ANPSettings]:
+        return self._config.anp_config
 
 
 config = Config()

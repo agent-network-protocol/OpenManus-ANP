@@ -65,3 +65,10 @@ temperature = 0.0                           # Controls randomness for vision mod
 # [search]
 # Search engine for agent to use. Default is "Google", can be set to "Baidu" or "DuckDuckGo".
 #engine = "Google"
+
+# Optional configuration for ANP tool
+# [anp]
+# Path to the DID document file
+# did_document_path = "/path/to/your/did.json"
+# Path to the private key file
+# private_key_path = "/path/to/your/private-key.pem"
