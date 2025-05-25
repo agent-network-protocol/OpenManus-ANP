@@ -1,24 +1,39 @@
 import asyncio
 import json
-import yaml
-import aiohttp
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
+import aiohttp
+import yaml
+from agent_connect.authentication import DIDWbaAuthHeader
+
+from app.config import PROJECT_ROOT, config
 from app.logger import logger
 from app.tool.base import BaseTool
-from agent_connect.authentication import DIDWbaAuthHeader
-from app.config import config, PROJECT_ROOT
 
 
 class ANPTool(BaseTool):
     name: str = "anp_tool"
-    description: str = """Use Agent Network Protocol (ANP) to interact with other agents.
-1. For the first use, please enter the URL: https://agent-search.ai/ad.json, which is an agent search service. You can use the interfaces inside to query agents that can provide hotels, tickets, and attractions.
-2. After receiving the agent's description document, you can crawl data based on the data link URL in the agent's description document.
-3. During the process, you can call the API to complete the service until you think the task is completed.
-4. Note, any URL obtained using ANPTool must be called using ANPTool, do not call it directly yourself.
+    description: str = """Use Agent Network Protocol (ANP) to interact with other agents through a sophisticated multi-step process.
+
+ANPTool Complex Workflow:
+1. **Agent Discovery Phase**: When first used, access https://agent-search.ai/ad.json, which is an agent search service to query a directory of agents providing services like hotels, tickets, attractions, etc.
+2. **Agent Description Parsing**: After obtaining an agent's AD (Agent Description) file, parse the various interfaces and capability descriptions within it.
+3. **Interface URL Discovery**: Extract specific API interface URLs from the AD file. These URLs point to concrete service interfaces (e.g., hotel booking, attraction query).
+4. **API Specification Retrieval**: Obtain the OpenAPI/YAML specification file via the interface URL to understand how to call the specific API.
+5. **Service Call Execution**: Construct the correct request parameters based on the API specification and call the specific service interface to complete the task.
+6. **Multi-turn Interaction Management**: Supports complex multi-step interaction flows until the task is completed.
+
+Special Considerations:
+- All URLs obtained via ANPTool must continue to be called using ANPTool; do not access them directly.
+- Supports DID (Decentralized Identity) authentication to ensure secure inter-agent communication.
+- Automatically handles authentication failure retry mechanisms.
+- Supports automatic parsing of multiple content formats (JSON, YAML, text).
+- Possesses comprehensive error handling and state management capabilities.
+
+This tool enables true interoperability within an agent network, serving as a key component for agent collaboration in AGI systems.
 """
+    did_manager: Optional[DIDManager] = None
     parameters: dict = {
         "type": "object",
         "properties": {
